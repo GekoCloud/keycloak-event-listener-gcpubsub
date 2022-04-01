@@ -4,6 +4,9 @@ import org.keycloak.events.Event;
 import org.keycloak.events.EventListenerProvider;
 import org.keycloak.events.admin.AdminEvent;
 import org.jboss.logging.Logger;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.pubsub.v1.Publisher;
 import com.google.protobuf.ByteString;
@@ -16,11 +19,14 @@ import java.util.concurrent.TimeUnit;
 
 public class GcPubSubEventListenerProvider implements EventListenerProvider {
 
+	public static final ObjectMapper msgObjectMapper = new ObjectMapper();
+
 	private static Logger logger = Logger.getLogger(GcPubSubEventListenerProvider.class);
 	private GcPubSubConfig cfg;
 	// private ConnectionFactory factory;
 
 	public GcPubSubEventListenerProvider(GcPubSubConfig cfg) {
+		logger.info("new gcpubsub provider: ");
 		this.cfg = cfg;
 	}
 
@@ -33,7 +39,7 @@ public class GcPubSubEventListenerProvider implements EventListenerProvider {
 		CustomEventAttributes customAttributes = getCustomEventAttributes();
 		EventClientNotificationGcpsMsg msg = EventClientNotificationGcpsMsg.create(event, customAttributes.getAppName());
 		Map<String, String> messageAttributes = GcPubSubAttributes.createMap(event);
-		String messageString = GcPubSubConfig.writeAsJson(msg, true);
+		String messageString = writeAsJson(msg, true);
 		String topicId = cfg.getAdminEventTopicId();
 
 		this.publishNotification(topicId, messageString, messageAttributes);
@@ -50,7 +56,7 @@ public class GcPubSubEventListenerProvider implements EventListenerProvider {
 		CustomAdminEventAttributes customAttributes = getCustomAdminEventAttributes();
 		EventAdminNotificationGcpsMsg msg = EventAdminNotificationGcpsMsg.create(event,  customAttributes.getAppName());
 		Map<String, String> messageAttributes = GcPubSubAttributes.createMap(event);
-		String messageString = GcPubSubConfig.writeAsJson(msg, true);
+		String messageString = writeAsJson(msg, true);
 		String topicId = cfg.getAdminEventTopicId();
 
 		this.publishNotification(topicId, messageString, messageAttributes);
@@ -80,9 +86,9 @@ public class GcPubSubEventListenerProvider implements EventListenerProvider {
 			// topic)
 			ApiFuture<String> messageIdFuture = publisher.publish(pubsubMessage);
 			String messageId = messageIdFuture.get();
-			logger.info("Published message ID: " + messageId);
+			logger.infof("Published message ID: %s", messageId);
 		} catch (IOException | ExecutionException | InterruptedException ex) {
-			logger.error("keycloak-to-gcpubsub ERROR sending message: " + attributes, ex);
+			logger.error("keycloak-to-gcpubsub ERROR sending message.", ex);
 		} finally {
 			if (publisher != null) {
 				try {
@@ -90,11 +96,26 @@ public class GcPubSubEventListenerProvider implements EventListenerProvider {
 					publisher.shutdown();
 					publisher.awaitTermination(1, TimeUnit.MINUTES);
 				} catch (InterruptedException ex) {
-					logger.error("keycloak-to-gcpubsub ERROR shutting down publisher: " + attributes, ex);
+					logger.error("keycloak-to-gcpubsub ERROR shutting down publisher.", ex);
 				}
 			}
 		}
+	}
 
+	private static String writeAsJson(Object object, boolean isPretty) {
+		String messageAsJson = "unparsable";
+		try {
+			if(isPretty) {
+				messageAsJson = msgObjectMapper
+						.writerWithDefaultPrettyPrinter().writeValueAsString(object);
+			} else {
+				messageAsJson = msgObjectMapper.writeValueAsString(object);
+			}
+			
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+		}
+		return messageAsJson;
 	}
 
 }

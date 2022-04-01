@@ -5,7 +5,7 @@
     <groupId>com.github.acesso_io.keycloak.event.provider</groupId>
     <artifactId>keycloak-to-gcpubsub</artifactId>
     <packaging>jar</packaging>
-	<version>1.0.1</version>
+	<version>1.0.2</version>
     
     <name>Keycloak: Event Publisher to Google Cloud Pub Sub</name>
     <properties>
@@ -26,13 +26,12 @@
           <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>libraries-bom</artifactId>
-            <version>19.0.0</version>
+            <version>25.1.0</version>
             <type>pom</type>
             <scope>import</scope>
           </dependency>
         </dependencies>
       </dependencyManagement>	
-	
 	
     <dependencies>
         <dependency>
@@ -65,12 +64,10 @@
             <scope>provided</scope>
             <version>${keycloak.version}</version>
         </dependency>
-        
         <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>google-cloud-pubsub</artifactId>
         </dependency>
-
     </dependencies>
 
     <build>

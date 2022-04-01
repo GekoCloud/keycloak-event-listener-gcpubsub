@@ -1,15 +1,12 @@
 package com.github.acesso_io.keycloak.event.provider;
 
-
 import org.keycloak.Config.Scope;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
+import org.jboss.logging.Logger;
+import java.util.Objects;
 
 public class GcPubSubConfig {
-	
-	public static final ObjectMapper msgObjectMapper = new ObjectMapper();
+
+	private static Logger logger = Logger.getLogger(GcPubSubConfig.class);
 
 	private String projectId;
 	private String eventTopicId;
@@ -23,7 +20,12 @@ public class GcPubSubConfig {
 		cfg.eventTopicId = resolveConfigVar(config, "eventTopicId", "keycloak-events");
 		cfg.adminEventTopicId = resolveConfigVar(config, "adminEventTopicId", "keycloak-events");
 		cfg.appNameId = resolveConfigVar(config, "app_name", "keycloak-app");
-        
+
+		Objects.requireNonNull(cfg.projectId, "projectId must not be null.");
+        Objects.requireNonNull(cfg.eventTopicId, "eventTopicId must not be null.");
+        Objects.requireNonNull(cfg.adminEventTopicId, "adminEventTopicId must not be null");
+        Objects.requireNonNull(cfg.appNameId, "appNameId must not be null");
+		
 		return cfg;
 		
 	}
@@ -40,28 +42,11 @@ public class GcPubSubConfig {
 				value = System.getenv(envVariableName);
 			}
 		}
-		System.out.println("keycloak-to-gcpubsub configuration: " + variableName + "=" + value);
+		logger.infof("keycloak-to-gcpubsub configuration: %s=%s", variableName, value);
 		return value;
 		
 	}
 	
-	public static String writeAsJson(Object object, boolean isPretty) {
-		String messageAsJson = "unparsable";
-		try {
-			if(isPretty) {
-				messageAsJson = GcPubSubConfig.msgObjectMapper
-						.writerWithDefaultPrettyPrinter().writeValueAsString(object);
-			} else {
-				messageAsJson = GcPubSubConfig.msgObjectMapper.writeValueAsString(object);
-			}
-			
-		} catch (JsonProcessingException e) {
-			e.printStackTrace();
-		}
-		return messageAsJson;
-
-	}
-
 	public String getProjectId() {
 		return projectId;
 	}
