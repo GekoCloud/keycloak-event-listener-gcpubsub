@@ -7,33 +7,32 @@
     <packaging>jar</packaging>
 	<version>1.0.1</version>
     
-    <name>Keycloak: Event Publisher to Google Cloud Pub Sub</name>
+    <name>Digital Account - Keycloak - Event Publisher to Google Cloud Pub Sub</name>
     <properties>
     	<keycloak.version>15.1.1</keycloak.version>
     	<jar.finalName>${project.artifactId}-${project.version}</jar.finalName>
     </properties>
     
 	<distributionManagement>
-	   <repository>
-	     <id>github</id>
-	     <name>GitHub acesso-io Apache Maven Packages</name>
-	     <url>https://maven.pkg.github.com/acesso-io/keycloak-event-listener-gcpubsub</url>
-	   </repository>
+	    <repository>
+	        <id>github</id>
+	        <name>GitHub acesso-io Apache Maven Packages</name>
+	        <url>https://maven.pkg.github.com/acesso-io/keycloak-event-listener-gcpubsub</url>
+	    </repository>
 	</distributionManagement>
 	
     <dependencyManagement>
         <dependencies>
-          <dependency>
-            <groupId>com.google.cloud</groupId>
-            <artifactId>libraries-bom</artifactId>
-            <version>19.0.0</version>
-            <type>pom</type>
-            <scope>import</scope>
-          </dependency>
+            <dependency>
+                <groupId>com.google.cloud</groupId>
+                <artifactId>libraries-bom</artifactId>
+                <version>25.0.0</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
         </dependencies>
-      </dependencyManagement>	
-	
-	
+    </dependencyManagement>	
+		
     <dependencies>
         <dependency>
             <groupId>org.keycloak</groupId>
@@ -65,13 +64,32 @@
             <scope>provided</scope>
             <version>${keycloak.version}</version>
         </dependency>
-        
         <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>google-cloud-pubsub</artifactId>
+            <version>1.116.1</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.sonarsource.scanner.maven</groupId>
+            <artifactId>sonar-maven-plugin</artifactId>
+            <version>3.9.1.2184</version>
+            <type>pom</type>
+        </dependency>
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>sonar</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <sonar.host.url> https://sonarcloud.io/ </sonar.host.url>
+                <sonar.organization> unico-io </sonar.organization>
+                <sonar.login>  </sonar.login> 
+            </properties>
+        </profile>
+    </profiles>
 
     <build>
         <finalName>keycloak-to-gcpubsub</finalName>

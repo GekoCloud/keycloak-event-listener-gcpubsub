@@ -68,3 +68,6 @@ operationType: "UPDATE"
 ```
 echo "yes" | $KEYCLOAK_HOME/bin/jboss-cli.sh --file=$KEYCLOAK_HOME/KEYCLOAK_TO_GCPUBSUB.cli 
 ```
+
+# SonarQube - Run with the token parameter
+mvn sonar:sonar -Dsonar.login=myAuthenticationToken
